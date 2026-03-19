@@ -22,8 +22,8 @@ module RubyLLM
             @completed_response = nil
             @output_items_by_index = {}
             @shell_commands_by_output_index = Hash.new { |hash, key| hash[key] = {} }
-            @shell_outputs_by_item_id = {}
-            @shell_outputs_by_output_index = {}
+            @shell_outputs_by_item_id = Hash.new { |hash, key| hash[key] = {} }
+            @shell_outputs_by_output_index = Hash.new { |hash, key| hash[key] = {} }
           end
 
           def add(event)
@@ -78,12 +78,14 @@ module RubyLLM
           end
 
           def add_shell_output_content(event)
+            command_index = event['command_index']
             output_index = event['output_index']
             item_id = event['item_id']
             output = RubyLLM::Utils.deep_dup(event['output'] || [])
 
-            @shell_outputs_by_item_id[item_id] = output if item_id
-            @shell_outputs_by_output_index[output_index] = output unless output_index.nil?
+            @shell_outputs_by_item_id[item_id][command_index] = output if item_id
+
+            @shell_outputs_by_output_index[output_index][command_index] = output unless output_index.nil?
 
             item = @output_items_by_index[output_index]
             merge_shell_output!(item, output_index) if item&.dig('type') == 'shell_call_output'
@@ -108,7 +110,7 @@ module RubyLLM
           def merge_shell_output!(item, output_index)
             return unless item
 
-            output = @shell_outputs_by_item_id[item['id']] || @shell_outputs_by_output_index[output_index]
+            output = flattened_shell_output(item['id'], output_index)
             item['output'] = RubyLLM::Utils.deep_dup(output) if output
           end
 
@@ -143,6 +145,16 @@ module RubyLLM
             end
 
             output_by_index.sort_by(&:first).map(&:last)
+          end
+
+          def flattened_shell_output(item_id, output_index)
+            output_by_command_index = @shell_outputs_by_item_id[item_id]
+            output_by_command_index = @shell_outputs_by_output_index[output_index] if output_by_command_index.empty?
+            return if output_by_command_index.empty?
+
+            output_by_command_index
+              .sort_by { |command_index, _| command_index || -1 }
+              .flat_map(&:last)
           end
         end
 

@@ -442,6 +442,101 @@ RSpec.describe RubyLLM::Providers::OpenAIResponses::Streaming do
       )
     end
 
+    it 'preserves output for each command in a multi-command shell call' do
+      events = [
+        {
+          'type' => 'response.output_item.done',
+          'item' => {
+            'id' => 'sh_multi',
+            'type' => 'shell_call',
+            'status' => 'completed',
+            'action' => { 'commands' => ['echo one', 'echo two'] },
+            'call_id' => 'call_shell_multi',
+            'environment' => { 'type' => 'container_reference', 'container_id' => 'cntr_multi' }
+          },
+          'output_index' => 0
+        },
+        {
+          'type' => 'response.output_item.done',
+          'item' => {
+            'id' => 'sho_multi',
+            'type' => 'shell_call_output',
+            'status' => 'completed',
+            'call_id' => 'call_shell_multi',
+            'output' => []
+          },
+          'output_index' => 1
+        },
+        {
+          'type' => 'response.shell_call_output_content.done',
+          'command_index' => 0,
+          'item_id' => 'sho_multi',
+          'output' => [
+            {
+              'outcome' => { 'type' => 'exit', 'exit_code' => 0 },
+              'stderr' => '',
+              'stdout' => "one\n"
+            }
+          ],
+          'output_index' => 1
+        },
+        {
+          'type' => 'response.shell_call_output_content.done',
+          'command_index' => 1,
+          'item_id' => 'sho_multi',
+          'output' => [
+            {
+              'outcome' => { 'type' => 'exit', 'exit_code' => 0 },
+              'stderr' => '',
+              'stdout' => "two\n"
+            }
+          ],
+          'output_index' => 1
+        },
+        {
+          'type' => 'response.completed',
+          'response' => {
+            'id' => 'resp_shell_multi_command',
+            'model' => 'gpt-5.2',
+            'output' => [],
+            'usage' => { 'input_tokens' => 8, 'output_tokens' => 4 }
+          }
+        }
+      ]
+
+      message = provider.send(:stream_response, build_stream_connection(events), payload)
+      results = RubyLLM::Providers::OpenAIResponses::BuiltInTools.parse_shell_call_results_from_message(message)
+
+      expect(results).to eq(
+        [
+          {
+            id: 'sh_multi',
+            call_id: 'call_shell_multi',
+            status: 'completed',
+            environment: {
+              'type' => 'container_reference',
+              'container_id' => 'cntr_multi'
+            },
+            action: {
+              'commands' => ['echo one', 'echo two']
+            },
+            output: [
+              {
+                'outcome' => { 'type' => 'exit', 'exit_code' => 0 },
+                'stderr' => '',
+                'stdout' => "one\n"
+              },
+              {
+                'outcome' => { 'type' => 'exit', 'exit_code' => 0 },
+                'stderr' => '',
+                'stdout' => "two\n"
+              }
+            ]
+          }
+        ]
+      )
+    end
+
     it 'keeps function-call streaming reconstruction intact' do
       events = [
         {
