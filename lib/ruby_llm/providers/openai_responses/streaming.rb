@@ -174,10 +174,24 @@ module RubyLLM
           end
 
           raw_response = completed_response.build_response(response)
-          message = accumulator.to_message(raw_response)
+          message = message_from_stream(accumulator, raw_response)
           assign_response_id(message, raw_response)
-          RubyLLM.logger.debug { "Stream completed: #{message.content}" }
+          log_stream_completion(message)
           message
+        end
+
+        def log_stream_completion(message)
+          content = message.content.to_s
+          return if content.empty?
+
+          RubyLLM.logger.debug { "Stream completed: #{content}" }
+        end
+
+        def message_from_stream(accumulator, raw_response)
+          parsed_message = Chat.parse_completion_response(raw_response)
+          return parsed_message if parsed_message&.tool_call?
+
+          accumulator.to_message(raw_response)
         end
 
         def build_chunk(data) # rubocop:disable Metrics/AbcSize,Metrics/CyclomaticComplexity,Metrics/MethodLength
