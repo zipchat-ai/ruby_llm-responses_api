@@ -581,5 +581,68 @@ RSpec.describe RubyLLM::Providers::OpenAIResponses::Streaming do
       expect(message.tool_calls['call_fn_1'].arguments).to eq({ 'city' => 'Berlin' })
       expect(message.raw.body['output'].first['type']).to eq('function_call')
     end
+
+    it 'returns executable local shell tool calls from completed streamed output' do
+      events = [
+        {
+          'type' => 'response.completed',
+          'response' => {
+            'id' => 'resp_shell_local',
+            'model' => 'gpt-5.4',
+            'output' => [
+              {
+                'id' => 'sh_local_1',
+                'type' => 'shell_call',
+                'status' => 'completed',
+                'action' => { 'commands' => ['pwd'], 'timeout_ms' => 10_000 },
+                'call_id' => 'call_shell_local_1',
+                'environment' => nil
+              }
+            ],
+            'tools' => [
+              {
+                'type' => 'shell',
+                'environment' => { 'type' => 'local' }
+              }
+            ],
+            'usage' => { 'input_tokens' => 8, 'output_tokens' => 3 }
+          }
+        }
+      ]
+
+      message = provider.send(:stream_response, build_stream_connection(events), payload)
+
+      expect(message.response_id).to eq('resp_shell_local')
+      expect(message.tool_calls['call_shell_local_1']).to be_a(
+        RubyLLM::Providers::OpenAIResponses::LocalShellToolCall
+      )
+      expect(message.tool_calls['call_shell_local_1'].arguments['action']['commands']).to eq(['pwd'])
+    end
+  end
+
+  describe '.log_stream_completion' do
+    let(:logger) { instance_double(Logger) }
+
+    before do
+      allow(RubyLLM).to receive(:logger).and_return(logger)
+    end
+
+    it 'skips empty tool-call completions' do
+      message = instance_double(RubyLLM::Message, content: '')
+
+      expect(logger).not_to receive(:debug)
+
+      described_class.log_stream_completion(message)
+    end
+
+    it 'logs streamed assistant content' do
+      message = instance_double(RubyLLM::Message, content: 'Hello')
+
+      expect(logger).to receive(:debug) do |&block|
+        expect(block.call).to eq('Stream completed: Hello')
+      end
+
+      described_class.log_stream_completion(message)
+    end
   end
 end

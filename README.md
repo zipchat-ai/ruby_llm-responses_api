@@ -122,8 +122,67 @@ tool = RubyLLM::ResponsesAPI::BuiltInTools.shell(
 # With memory limit
 tool = RubyLLM::ResponsesAPI::BuiltInTools.shell(memory_limit: '4g')
 
-# Local execution (you handle running commands yourself)
+# Local execution
 tool = RubyLLM::ResponsesAPI::BuiltInTools.shell(environment_type: 'local')
+```
+
+For local shell environments, provide an executor with `local_shell_executor`. The executor can be any object that responds to `#call(shell_call)`, such as a lambda, service object, adapter, or class instance. It can run commands in a local process, a sandbox, a remote worker, or any other environment your application controls.
+
+The executor is responsible for security, cwd, sandboxing, timeout behavior, output truncation, and permissions.
+
+The executor receives the raw `shell_call` hash from the Responses API. Common fields include:
+
+```ruby
+shell_call['call_id']
+shell_call.dig('action', 'commands')
+shell_call.dig('action', 'timeout_ms')
+shell_call.dig('action', 'max_output_length')
+shell_call['environment']
+```
+
+Return an array of command result hashes. Each result should include `stdout`, `stderr`, and `outcome`:
+
+```ruby
+[
+  {
+    'stdout' => "output\n",
+    'stderr' => '',
+    'outcome' => { 'type' => 'exit', 'exit_code' => 0 }
+  }
+]
+```
+
+For a timeout, return an outcome like:
+
+```ruby
+{ 'type' => 'timeout' }
+```
+
+Example:
+
+```ruby
+chat = RubyLLM.chat(model: 'gpt-5.2', provider: :openai_responses)
+
+chat.with_params(
+  tools: [
+    RubyLLM::ResponsesAPI::BuiltInTools.shell(environment_type: 'local')
+  ],
+  local_shell_executor: lambda do |shell_call|
+    commands = Array(shell_call.dig('action', 'commands'))
+
+    commands.map do |command|
+      result = run_command(command)
+
+      {
+        'stdout' => result.stdout,
+        'stderr' => result.stderr,
+        'outcome' => { 'type' => 'exit', 'exit_code' => result.exit_code }
+      }
+    end
+  end
+)
+
+chat.ask('Inspect the repo')
 ```
 
 ### Apply Patch

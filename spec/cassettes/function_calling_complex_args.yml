@@ -166,9 +166,7 @@ http_interactions:
     uri: https://api.openai.com/v1/responses
     body:
       encoding: UTF-8
-      string: '{"model":"gpt-4o-mini","input":[{"type":"message","role":"user","content":"Calculate
-        (100 + 50) / 3"},{"type":"function_call","call_id":"call_ItxW0AA5Q8deQPzZfPxyJVYQ","name":"test_calculator","arguments":"{\"expression\":\"(100
-        + 50) / 3\"}"},{"type":"function_call_output","call_id":"call_ItxW0AA5Q8deQPzZfPxyJVYQ","output":"50"}],"stream":false,"tools":[{"type":"function","name":"test_calculator","description":"Perform
+      string: '{"model":"gpt-4o-mini","input":[{"type":"function_call_output","call_id":"call_ItxW0AA5Q8deQPzZfPxyJVYQ","output":"50"}],"stream":false,"tools":[{"type":"function","name":"test_calculator","description":"Perform
         basic math calculations","parameters":{"type":"object","properties":{"expression":{"type":"string","description":"Math
         expression to evaluate"}},"required":["expression"],"additionalProperties":false,"strict":true},"strict":true}],"previous_response_id":"resp_01a29ecb13810a7800699593b44cb481909e469516314f9bdc"}'
     headers:

@@ -159,5 +159,21 @@ RSpec.describe RubyLLM::Providers::OpenAIResponses::Chat do
       expect(input.first[:call_id]).to eq('call_123')
       expect(input.first[:output]).to eq('{"result": "success"}')
     end
+
+    it 'serializes non-shell raw tool results as function output strings' do
+      messages = [
+        RubyLLM::Message.new(
+          role: :tool,
+          content: RubyLLM::Content::Raw.new({ 'result' => ['success'] }),
+          tool_call_id: 'call_123'
+        )
+      ]
+
+      input = chat_module.format_input(messages)
+
+      expect(input.first[:type]).to eq('function_call_output')
+      expect(input.first[:call_id]).to eq('call_123')
+      expect(input.first[:output]).to eq('{"result":["success"]}')
+    end
   end
 end
