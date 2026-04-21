@@ -16,17 +16,15 @@ module RubyLLM
         def render_payload(messages, tools:, temperature:, model:, stream: false,
                            schema: nil, thinking: nil, tool_prefs: nil) # rubocop:disable Lint/UnusedMethodArgument
           tool_prefs ||= {}
-          system_messages, non_system_messages = messages.partition { |m| m.role == :system }
-
-          instructions = system_messages.map { |m| extract_text_content(m.content) }.join("\n\n")
+          non_system_messages = messages.reject { |m| m.role == :system }
+          continuation_input = continuation_input_messages(non_system_messages)
 
           payload = {
             model: model.id,
-            input: format_input(non_system_messages),
+            input: format_input(continuation_input || messages),
             stream: stream
           }
 
-          payload[:instructions] = instructions unless instructions.empty?
           payload[:temperature] = temperature unless temperature.nil?
           apply_tools(payload, tools, tool_prefs)
           payload[:text] = build_schema_format(schema) if schema
@@ -85,6 +83,19 @@ module RubyLLM
             .last
         end
 
+        def continuation_input_messages(messages)
+          last_response_index = messages.rindex do |message|
+            message.role == :assistant && message.respond_to?(:response_id) && message.response_id
+          end
+          return nil unless last_response_index
+
+          trailing_messages = messages[(last_response_index + 1)..]
+          return nil unless trailing_messages&.any?
+          return nil unless trailing_messages.all? { |message| message.role == :tool }
+
+          trailing_messages
+        end
+
         def parse_completion_response(response)
           data = response.body
           return if data.nil? || data.empty?
@@ -98,8 +109,8 @@ module RubyLLM
           # Extract text content from output
           content = extract_output_text(output)
 
-          # Extract tool calls from function_call outputs
-          tool_calls = extract_tool_calls(output)
+          # Extract executable tool calls from function_call and local shell_call outputs
+          tool_calls = extract_tool_calls(output, response_tools: data['tools'])
 
           usage = data['usage'] || {}
           cached_tokens = usage.dig('input_tokens_details', 'cached_tokens')
@@ -118,17 +129,12 @@ module RubyLLM
           )
         end
 
-        def format_input(messages) # rubocop:disable Metrics/MethodLength
+        def format_input(messages)
           result = []
 
           messages.each do |msg|
             if msg.tool_call_id
-              # Tool result message - function_call_output type
-              result << {
-                type: 'function_call_output',
-                call_id: msg.tool_call_id,
-                output: extract_text_content(msg.content)
-              }
+              result << format_tool_result(msg)
             elsif msg.tool_calls&.any?
               # Assistant message with tool calls
               # First add any text content as a message
@@ -143,12 +149,7 @@ module RubyLLM
 
               # Then add each function call as a separate item
               msg.tool_calls.each_value do |tc|
-                result << {
-                  type: 'function_call',
-                  call_id: tc.id,
-                  name: tc.name,
-                  arguments: tc.arguments.is_a?(String) ? tc.arguments : JSON.generate(tc.arguments)
-                }
+                result << format_tool_call(tc)
               end
             else
               # Regular message
@@ -161,6 +162,38 @@ module RubyLLM
           end
 
           result
+        end
+
+        def format_tool_result(msg)
+          content = msg.content
+          return content.value if LocalShellExecutor.shell_call_output?(content)
+
+          {
+            type: 'function_call_output',
+            call_id: msg.tool_call_id,
+            output: format_function_tool_output(content)
+          }
+        end
+
+        def format_function_tool_output(content)
+          return raw_tool_output(content.value) if content.is_a?(RubyLLM::Content::Raw)
+
+          extract_text_content(content)
+        end
+
+        def raw_tool_output(value)
+          value.is_a?(String) ? value : JSON.generate(value)
+        end
+
+        def format_tool_call(tool_call)
+          return tool_call.shell_call if tool_call.is_a?(LocalShellToolCall)
+
+          {
+            type: 'function_call',
+            call_id: tool_call.id,
+            name: tool_call.name,
+            arguments: tool_call.arguments.is_a?(String) ? tool_call.arguments : JSON.generate(tool_call.arguments)
+          }
         end
 
         def format_message_content(content, tool_calls = nil)
@@ -180,12 +213,7 @@ module RubyLLM
           # Add tool calls if present (for assistant messages)
           if tool_calls&.any?
             tool_calls.each_value do |tc|
-              parts << {
-                type: 'function_call',
-                call_id: tc.id,
-                name: tc.name,
-                arguments: tc.arguments.is_a?(String) ? tc.arguments : JSON.generate(tc.arguments)
-              }
+              parts << format_tool_call(tc)
             end
           end
 
@@ -263,20 +291,35 @@ module RubyLLM
             .join
         end
 
-        def extract_tool_calls(output)
-          function_calls = output.select { |item| item['type'] == 'function_call' }
-          return nil if function_calls.empty?
-
-          function_calls.to_h do |fc|
-            [
-              fc['call_id'],
-              ToolCall.new(
-                id: fc['call_id'],
-                name: fc['name'],
-                arguments: parse_arguments(fc['arguments'])
-              )
-            ]
+        def extract_tool_calls(output, response_tools: nil)
+          executable_calls = output.select do |item|
+            item['type'] == 'function_call' || local_shell_call?(item, response_tools: response_tools)
           end
+          return nil if executable_calls.empty?
+
+          executable_calls.to_h do |item|
+            tool_call = if local_shell_call?(item, response_tools: response_tools)
+                          LocalShellToolCall.new(item)
+                        else
+                          ToolCall.new(
+                            id: item['call_id'],
+                            name: item['name'],
+                            arguments: parse_arguments(item['arguments'])
+                          )
+                        end
+            [tool_call.id, tool_call]
+          end
+        end
+
+        def local_shell_call?(item, response_tools: nil)
+          return false unless item['type'] == 'shell_call'
+          return true if item.dig('environment', 'type') == 'local'
+
+          item['environment'].nil? && local_shell_tool_configured?(response_tools)
+        end
+
+        def local_shell_tool_configured?(tools)
+          Array(tools).any? { |tool| tool['type'] == 'shell' && tool.dig('environment', 'type') == 'local' }
         end
 
         def parse_arguments(arguments)

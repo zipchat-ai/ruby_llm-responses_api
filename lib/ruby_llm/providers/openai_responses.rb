@@ -20,6 +20,8 @@ module RubyLLM
       # rubocop:disable Metrics/ParameterLists
       def complete(messages, tools:, temperature:, model:, params: {}, headers: {},
                    schema: nil, thinking: nil, tool_prefs: nil, &block)
+        params = params.except(:local_shell_executor, 'local_shell_executor')
+
         if params[:transport]&.to_sym == :websocket
           ws_complete(messages, tools: tools, temperature: temperature, model: model,
                                 params: params.except(:transport), schema: schema,
@@ -214,7 +216,7 @@ module RubyLLM
         end
 
         def slug
-          :openai_responses
+          'openai_responses'
         end
       end
     end

@@ -9,6 +9,7 @@ require_relative 'ruby_llm/providers/openai_responses/base'
 require_relative 'ruby_llm/providers/openai_responses/capabilities'
 require_relative 'ruby_llm/providers/openai_responses/media'
 require_relative 'ruby_llm/providers/openai_responses/tools'
+require_relative 'ruby_llm/providers/openai_responses/local_shell_executor'
 require_relative 'ruby_llm/providers/openai_responses/models'
 require_relative 'ruby_llm/providers/openai_responses/streaming'
 require_relative 'ruby_llm/providers/openai_responses/chat'
@@ -39,7 +40,7 @@ RubyLLM::Providers::OpenAIResponses::ModelRegistry.register_all!
 module RubyLLM
   # ResponsesAPI namespace for direct access to helpers and version
   module ResponsesAPI
-    VERSION = '0.5.2'
+    VERSION = '0.5.3'
 
     # Shorthand access to built-in tool helpers
     BuiltInTools = Providers::OpenAIResponses::BuiltInTools

@@ -5,11 +5,11 @@ http_interactions:
     uri: https://api.openai.com/v1/responses
     body:
       encoding: UTF-8
-      string: '{"model":"gpt-4o-mini","input":[{"type":"message","role":"user","content":"What
-        is Ruby?"}],"stream":false,"instructions":"Always be concise."}'
+      string: '{"model":"gpt-4o-mini","input":[{"type":"message","role":"developer","content":"Always
+        be concise."},{"type":"message","role":"user","content":"What is Ruby?"}],"stream":false}'
     headers:
       User-Agent:
-      - Faraday v2.14.0
+      - Faraday v2.14.1
       Authorization:
       - Bearer <OPENAI_API_KEY>
       Content-Type:
@@ -24,7 +24,7 @@ http_interactions:
       message: OK
     headers:
       Date:
-      - Wed, 18 Feb 2026 10:26:21 GMT
+      - Tue, 21 Apr 2026 10:08:25 GMT
       Content-Type:
       - application/json
       Transfer-Encoding:
@@ -34,64 +34,64 @@ http_interactions:
       Server:
       - cloudflare
       X-Ratelimit-Limit-Requests:
-      - '5000'
+      - '30000'
       X-Ratelimit-Limit-Tokens:
-      - '4000000'
+      - '150000000'
       X-Ratelimit-Remaining-Requests:
-      - '4999'
+      - '29999'
       X-Ratelimit-Remaining-Tokens:
-      - '3999961'
+      - '149999960'
       X-Ratelimit-Reset-Requests:
-      - 12ms
+      - 2ms
       X-Ratelimit-Reset-Tokens:
       - 0s
       Openai-Version:
       - '2020-10-01'
       Openai-Organization:
-      - user-h7m2t30jnyqzec1thkvt5rcd
+      - zipchat
       Openai-Project:
-      - proj_yBBvayevSgRR3SVjSmBgm0so
+      - proj_tor65x8ddwYUBmnOFz47CzNA
       X-Request-Id:
-      - req_c2611485e638467f8d99e639a2340253
+      - req_b31618922b4c460db4be53bafb2d2e32
       Openai-Processing-Ms:
-      - '1630'
+      - '1800'
       Cf-Cache-Status:
       - DYNAMIC
       Set-Cookie:
-      - __cf_bm=vmIcw8dS4jtu8nkYU1hHgk75dBOiB62C98FnPW481P8-1771410380.039279-1.0.1.1-DOwKKstDvjCjT0Wul_M04mVoc5dGKnGCCLg0cBz8ICCNAgLeD8SG4Z8fkhRWXHtcw7zXlEESlDS8oP_8A2sOG_n_mIdnfvcfh3Mltw5wFR.4j0HQkNz.z9Pzuhf0LVgX;
-        HttpOnly; Secure; Path=/; Domain=api.openai.com; Expires=Wed, 18 Feb 2026
-        10:56:21 GMT
+      - __cf_bm=a_I8PUgYXnYdTH19jacwD_MEDNOY5rswxrImrVj2sfE-1776766102.725094-1.0.1.1-lt1V_qYIHlKtKgrhA03tHyfwBVOcGLK0MYrsbI_i3iHfHfUmM.0wRzrF9fX4rENvrYzFQH07Y5Rc7dzuaNI_8qM6TI7PNbUZ2.MA2nFrrb1Kxnokbv98MPM8WrD7LCGC;
+        HttpOnly; Secure; Path=/; Domain=api.openai.com; Expires=Tue, 21 Apr 2026
+        10:38:25 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       X-Content-Type-Options:
       - nosniff
       Cf-Ray:
-      - 9cfcd35b39273572-WAW
+      - 9efb964e0aab9e0c-SOF
       Alt-Svc:
       - h3=":443"; ma=86400
     body:
       encoding: ASCII-8BIT
       string: |-
         {
-          "id": "resp_0c507c033809d5e300699593cc23d081968e6506bb7ca3419d",
+          "id": "resp_05a31f415c9584410069e74c972980819ead042eac7fd719b9",
           "object": "response",
-          "created_at": 1771410380,
+          "created_at": 1776766103,
           "status": "completed",
           "background": false,
           "billing": {
             "payer": "developer"
           },
-          "completed_at": 1771410381,
+          "completed_at": 1776766104,
           "error": null,
           "frequency_penalty": 0.0,
           "incomplete_details": null,
-          "instructions": "Always be concise.",
+          "instructions": null,
           "max_output_tokens": null,
           "max_tool_calls": null,
           "model": "gpt-4o-mini-2024-07-18",
           "output": [
             {
-              "id": "msg_0c507c033809d5e300699593cc6ab881969ed5ba3dc8c8a2fa",
+              "id": "msg_05a31f415c9584410069e74c97f02c819eb3ed5ab894ff85d0",
               "type": "message",
               "status": "completed",
               "content": [
@@ -99,7 +99,7 @@ http_interactions:
                   "type": "output_text",
                   "annotations": [],
                   "logprobs": [],
-                  "text": "Ruby is a dynamic, open-source programming language known for its simplicity and productivity. It emphasizes object-oriented programming and features elegant syntax that is easy to read and write. Ruby is often used for web development, particularly with the Ruby on Rails framework, which streamlines the process of building web applications. The language supports various paradigms, including functional and imperative programming."
+                  "text": "Ruby is a dynamic, object-oriented programming language known for its simplicity and productivity. Created by Yukihiro \"Matz\" Matsumoto in the mid-1990s, Ruby emphasizes readability and allows developers to express ideas naturally. It's widely used in web development, particularly with the Ruby on Rails framework, which enables rapid application development. Ruby supports multiple programming paradigms, including functional and imperative styles."
                 }
               ],
               "role": "assistant"
@@ -109,7 +109,7 @@ http_interactions:
           "presence_penalty": 0.0,
           "previous_response_id": null,
           "prompt_cache_key": null,
-          "prompt_cache_retention": null,
+          "prompt_cache_retention": "in_memory",
           "reasoning": {
             "effort": null,
             "summary": null
@@ -134,14 +134,14 @@ http_interactions:
             "input_tokens_details": {
               "cached_tokens": 0
             },
-            "output_tokens": 73,
+            "output_tokens": 82,
             "output_tokens_details": {
               "reasoning_tokens": 0
             },
-            "total_tokens": 92
+            "total_tokens": 101
           },
           "user": null,
           "metadata": {}
         }
-  recorded_at: Wed, 18 Feb 2026 10:26:21 GMT
+  recorded_at: Tue, 21 Apr 2026 10:08:24 GMT
 recorded_with: VCR 6.4.0

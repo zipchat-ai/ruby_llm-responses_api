@@ -196,9 +196,7 @@ http_interactions:
     uri: https://api.openai.com/v1/responses
     body:
       encoding: UTF-8
-      string: '{"model":"gpt-4o-mini","input":[{"type":"message","role":"user","content":"What''s
-        the weather in Paris and what is 15 * 7?"},{"type":"function_call","call_id":"call_0vUxT1QXrfMbvAjuPGLhSNd9","name":"test_weather","arguments":"{\"location\":\"Paris\"}"},{"type":"function_call","call_id":"call_0uT1bW92IvkGQe0dPne6WBYM","name":"test_calculator","arguments":"{\"expression\":\"15
-        * 7\"}"},{"type":"function_call_output","call_id":"call_0vUxT1QXrfMbvAjuPGLhSNd9","output":"The
+      string: '{"model":"gpt-4o-mini","input":[{"type":"function_call_output","call_id":"call_0vUxT1QXrfMbvAjuPGLhSNd9","output":"The
         weather in Paris is sunny, 72°F"},{"type":"function_call_output","call_id":"call_0uT1bW92IvkGQe0dPne6WBYM","output":"105"}],"stream":false,"tools":[{"type":"function","name":"test_weather","description":"Get
         the current weather for a location","parameters":{"type":"object","properties":{"location":{"type":"string","description":"The
         city name"}},"required":["location"],"additionalProperties":false,"strict":true},"strict":true},{"type":"function","name":"test_calculator","description":"Perform
