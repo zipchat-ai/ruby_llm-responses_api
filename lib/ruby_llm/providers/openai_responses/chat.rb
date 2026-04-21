@@ -16,18 +16,15 @@ module RubyLLM
         def render_payload(messages, tools:, temperature:, model:, stream: false,
                            schema: nil, thinking: nil, tool_prefs: nil) # rubocop:disable Lint/UnusedMethodArgument
           tool_prefs ||= {}
-          system_messages, non_system_messages = messages.partition { |m| m.role == :system }
-
-          instructions = system_messages.map { |m| extract_text_content(m.content) }.join("\n\n")
+          non_system_messages = messages.reject { |m| m.role == :system }
           continuation_input = continuation_input_messages(non_system_messages)
 
           payload = {
             model: model.id,
-            input: format_input(continuation_input || non_system_messages),
+            input: format_input(continuation_input || messages),
             stream: stream
           }
 
-          payload[:instructions] = instructions unless instructions.empty? || continuation_input
           payload[:temperature] = temperature unless temperature.nil?
           apply_tools(payload, tools, tool_prefs)
           payload[:text] = build_schema_format(schema) if schema

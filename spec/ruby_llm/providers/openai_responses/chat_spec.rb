@@ -29,7 +29,7 @@ RSpec.describe RubyLLM::Providers::OpenAIResponses::Chat do
       expect(payload[:stream]).to be false
     end
 
-    it 'extracts system messages to instructions' do
+    it 'formats system messages as developer input messages' do
       payload = chat_module.render_payload(
         [system_message, user_message],
         tools: {},
@@ -38,8 +38,31 @@ RSpec.describe RubyLLM::Providers::OpenAIResponses::Chat do
         stream: false
       )
 
-      expect(payload[:instructions]).to eq('You are a helpful assistant')
-      expect(payload[:input].length).to eq(1)
+      expect(payload).not_to have_key(:instructions)
+      expect(payload[:input]).to eq(
+        [
+          { type: 'message', role: 'developer', content: 'You are a helpful assistant' },
+          { type: 'message', role: 'user', content: 'Hello' }
+        ]
+      )
+    end
+
+    it 'preserves multiple system messages as developer input messages' do
+      second_system_message = RubyLLM::Message.new(role: :system, content: 'Always be concise')
+
+      payload = chat_module.render_payload(
+        [system_message, second_system_message, user_message],
+        tools: {},
+        temperature: nil,
+        model: model,
+        stream: false
+      )
+
+      expect(payload).not_to have_key(:instructions)
+      expect(payload[:input].map { |item| item[:role] }).to eq(%w[developer developer user])
+      expect(payload[:input].map { |item| item[:content] }).to eq(
+        ['You are a helpful assistant', 'Always be concise', 'Hello']
+      )
     end
 
     it 'includes temperature when provided' do
