@@ -5,12 +5,12 @@ http_interactions:
     uri: https://api.openai.com/v1/responses
     body:
       encoding: UTF-8
-      string: '{"model":"gpt-4o-mini","input":[{"type":"message","role":"user","content":"Say
-        hello"}],"stream":false,"instructions":"You are a pirate. Always respond like
-        a pirate. Use arr and matey."}'
+      string: '{"model":"gpt-4o-mini","input":[{"type":"message","role":"developer","content":"You
+        are a pirate. Always respond like a pirate. Use arr and matey."},{"type":"message","role":"user","content":"Say
+        hello"}],"stream":false}'
     headers:
       User-Agent:
-      - Faraday v2.14.0
+      - Faraday v2.14.1
       Authorization:
       - Bearer <OPENAI_API_KEY>
       Content-Type:
@@ -25,7 +25,7 @@ http_interactions:
       message: OK
     headers:
       Date:
-      - Wed, 18 Feb 2026 10:26:19 GMT
+      - Tue, 21 Apr 2026 10:08:22 GMT
       Content-Type:
       - application/json
       Transfer-Encoding:
@@ -35,64 +35,64 @@ http_interactions:
       Server:
       - cloudflare
       X-Ratelimit-Limit-Requests:
-      - '5000'
+      - '30000'
       X-Ratelimit-Limit-Tokens:
-      - '4000000'
+      - '150000000'
       X-Ratelimit-Remaining-Requests:
-      - '4999'
+      - '29999'
       X-Ratelimit-Remaining-Tokens:
-      - '3999951'
+      - '149999950'
       X-Ratelimit-Reset-Requests:
-      - 12ms
+      - 2ms
       X-Ratelimit-Reset-Tokens:
       - 0s
       Openai-Version:
       - '2020-10-01'
       Openai-Organization:
-      - user-h7m2t30jnyqzec1thkvt5rcd
+      - zipchat
       Openai-Project:
-      - proj_yBBvayevSgRR3SVjSmBgm0so
+      - proj_tor65x8ddwYUBmnOFz47CzNA
       X-Request-Id:
-      - req_574d853dfe60413a80c29a5679b3cf72
+      - req_0a77a65a1120455083b9b49eee73ecbe
       Openai-Processing-Ms:
-      - '1110'
+      - '1761'
       Cf-Cache-Status:
       - DYNAMIC
       Set-Cookie:
-      - __cf_bm=zQx5QSDyeV.6DDJC7cIvjyAUtZzsqPvrYcwuBP4lytQ-1771410378.7320893-1.0.1.1-D_hOL2Ytee5MrfSC9u5ByG0CAAhh73eBCeSKGra0Q0oVCIncteDVyLxUYMlfHgjsqFgrhvI71ceH4olpw1sU.RGNrKvNk_Bdf3HwkvRTL6sgpJTS3CwLMxlSOCc8joxt;
-        HttpOnly; Secure; Path=/; Domain=api.openai.com; Expires=Wed, 18 Feb 2026
-        10:56:19 GMT
+      - __cf_bm=J97FjzXR4dWHvPrj.F2fLnKHHEqWDhLDSHzoa8pnZuw-1776766100.3974354-1.0.1.1-nu3o4jkVQamamVlBf7xsFjFjeMxJAoYXwlaqIAY0J1C9HKQDnHpw.Rx7bx2MKvkR1UfY4mnYFxJemHkYO_bGhRZe4CzIlndGSMFu95IM2okl3Yzw_Nl0yQy54M9PWzzj;
+        HttpOnly; Secure; Path=/; Domain=api.openai.com; Expires=Tue, 21 Apr 2026
+        10:38:22 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       X-Content-Type-Options:
       - nosniff
       Cf-Ray:
-      - 9cfcd35318e5ee48-WAW
+      - 9efb963f7819bda6-SOF
       Alt-Svc:
       - h3=":443"; ma=86400
     body:
       encoding: ASCII-8BIT
       string: |-
         {
-          "id": "resp_0f7853d04f51fbf700699593cad1308195afb021c508857bb3",
+          "id": "resp_09ce6a7b72e1e5980069e74c94dca881909706cc9ebfb3d8ed",
           "object": "response",
-          "created_at": 1771410378,
+          "created_at": 1776766100,
           "status": "completed",
           "background": false,
           "billing": {
-            "payer": "developer"
+            "payer": "openai"
           },
-          "completed_at": 1771410379,
+          "completed_at": 1776766102,
           "error": null,
           "frequency_penalty": 0.0,
           "incomplete_details": null,
-          "instructions": "You are a pirate. Always respond like a pirate. Use arr and matey.",
+          "instructions": null,
           "max_output_tokens": null,
           "max_tool_calls": null,
           "model": "gpt-4o-mini-2024-07-18",
           "output": [
             {
-              "id": "msg_0f7853d04f51fbf700699593cb73048195b8edf56a0b2c1e85",
+              "id": "msg_09ce6a7b72e1e5980069e74c9625dc8190a8375c07f30aa3d9",
               "type": "message",
               "status": "completed",
               "content": [
@@ -100,7 +100,7 @@ http_interactions:
                   "type": "output_text",
                   "annotations": [],
                   "logprobs": [],
-                  "text": "Ahoy there, matey! A hearty hello to ye! Arr! How be ye on this fine day?"
+                  "text": "Ahoy, matey! A hearty hello to ye! What be yer desire on this fine day upon the high seas? Arr!"
                 }
               ],
               "role": "assistant"
@@ -110,7 +110,7 @@ http_interactions:
           "presence_penalty": 0.0,
           "previous_response_id": null,
           "prompt_cache_key": null,
-          "prompt_cache_retention": null,
+          "prompt_cache_retention": "in_memory",
           "reasoning": {
             "effort": null,
             "summary": null
@@ -135,14 +135,14 @@ http_interactions:
             "input_tokens_details": {
               "cached_tokens": 0
             },
-            "output_tokens": 24,
+            "output_tokens": 28,
             "output_tokens_details": {
               "reasoning_tokens": 0
             },
-            "total_tokens": 54
+            "total_tokens": 58
           },
           "user": null,
           "metadata": {}
         }
-  recorded_at: Wed, 18 Feb 2026 10:26:19 GMT
+  recorded_at: Tue, 21 Apr 2026 10:08:22 GMT
 recorded_with: VCR 6.4.0

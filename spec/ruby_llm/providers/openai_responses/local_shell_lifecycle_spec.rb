@@ -144,8 +144,15 @@ RSpec.describe 'OpenAI Responses local shell lifecycle' do
     expect(end_messages.map(&:role)).to eq(%i[assistant tool assistant])
 
     expect(requests.length).to eq(2)
-    expect(requests.first['input'].first['content']).to eq('Inspect the repo')
-    expect(requests.first['instructions']).to eq('Be brief.')
+    expect(requests.first['input'].first).to eq(
+      {
+        'type' => 'message',
+        'role' => 'developer',
+        'content' => 'Be brief.'
+      }
+    )
+    expect(requests.first['input'].last['content']).to eq('Inspect the repo')
+    expect(requests.first).not_to have_key('instructions')
     expect(requests.first).not_to have_key('local_shell_executor')
 
     continuation = requests.last
